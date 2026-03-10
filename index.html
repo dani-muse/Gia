@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Gia 💖</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+
+        #canvas { display: block; position: absolute; top: 0; left: 0; }
+
+        #start-btn {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 35px; font-size: 1.5rem;
+            background: #ff3366; color: white;
+            border: none; border-radius: 50px;
+            cursor: pointer; z-index: 100;
+            box-shadow: 0 0 25px #ff3366;
+        }
+
+        /* Countdown Style */
+        .overlay {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center; color: #ff3366;
+            z-index: 50; width: 100%;
+            display: none;
+        }
+        #countdown { font-size: 6rem; font-weight: bold; text-shadow: 0 0 20px #ff3366; }
+
+        #poem-text {
+            position: absolute; top: 15%; width: 100%;
+            text-align: center; color: #fff;
+            font-size: 1.3rem; font-style: italic;
+            text-shadow: 0 0 10px #ff3366;
+            z-index: 15; padding: 0 20px;
+            box-sizing: border-box; opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .photo {
+            position: absolute; width: 280px; height: 280px;
+            border: 6px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            object-fit: cover; left: 50%; top: 55%;
+            opacity: 0; transform: translate(-50%, -50%) scale(0.5);
+            transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 1s ease-in-out;
+            z-index: 5;
+        }
+
+        #final-text {
+            display: none; position: absolute; bottom: 8%;
+            width: 100%; text-align: center; color: white;
+            z-index: 20; animation: fadeIn 2s ease-in;
+        }
+
+        h1 { margin: 0; color: #ff3366; font-size: 2.2rem; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <button id="start-btn">Mi Amore 💖</button>
+    <audio id="bg-music" src="music.flac" loop></audio>
+    <canvas id="canvas"></canvas>
+
+    <div class="overlay" id="overlay">
+        <div id="countdown">3</div>
+    </div>
+
+    <div id="poem-text"></div>
+
+    <div id="final-text">
+        <h1>Happy Birthday, Gia! 💖</h1>
+        <p>You're the best part of my world. ❤️</p>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const music = document.getElementById('bg-music');
+        const overlay = document.getElementById('overlay');
+        const countEl = document.getElementById('countdown');
+        const poemEl = document.getElementById('poem-text');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const myFiles = ['g1.jpeg', 'g2.png', 'g3.png', 'g4.png', 'g5.jpeg', 'g6.jpeg', 'g7.jpeg', 'g8.jpeg', 'g9.jpeg'];
+        
+        const poemLines = [
+            "A world of color, bright and new,",
+            "Every moment better because of you.",
+            "A smile that catches every light,",
+            "Turning the darkest days to bright.",
+            "More than a dream, more than a friend,",
+            "A love on which I can depend.",
+            "Nine little memories, pinned to the start,",
+            "Of the beautiful place you hold in my heart.",
+            "Happy Birthday, my beautiful Gia."
+        ];
+
+        startBtn.addEventListener('click', () => {
+            startBtn.style.display = 'none';
+            music.play();
+            overlay.style.display = 'block'; // Show countdown
+            startCountdown();
+            setInterval(drawMatrix, 35);
+        });
+
+        // Matrix Background
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+        const chars = 'GIA❤️LOVE✨01';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ff3366';
+            ctx.font = fontSize + 'px arial';
+            drops.forEach((y, i) => {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+
+        // --- FIXED COUNTDOWN LOGIC ---
+        function startCountdown() {
+            let count = 3;
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countEl.textContent = count;
+                } else {
+                    clearInterval(timer);
+                    overlay.style.display = 'none'; // Hide countdown
+                    startSlideshow(); // Start the story
+                }
+            }, 1000);
+        }
+
+        function startSlideshow() {
+            let index = 0;
+            function showNext() {
+                if (index < myFiles.length) {
+                    poemEl.textContent = poemLines[index];
+                    poemEl.style.opacity = "1";
+
+                    const img = document.createElement('img');
+                    img.src = myFiles[index];
+                    img.className = 'photo';
+                    document.body.appendChild(img);
+
+                    setTimeout(() => {
+                        img.style.opacity = "1";
+                        img.style.transform = "translate(-50%, -50%) scale(1)";
+                    }, 100);
+
+                    setTimeout(() => {
+                        img.style.opacity = "0";
+                        poemEl.style.opacity = "0";
+                        img.style.transform = "translate(-50%, -50%) scale(0.8)";
+                        setTimeout(() => { 
+                            img.remove(); 
+                            index++;
+                            showNext(); 
+                        }, 1000);
+                    }, 3500);
+                } else {
+                    showFinalHeart();
+                }
+            }
+            showNext();
+        }
+
+        function showFinalHeart() {
+            document.getElementById('final-text').style.display = 'block';
+            const heartCoords = [
+                { x: 0, y: -90 }, { x: -65, y: -130 }, { x: 65, y: -130 },
+                { x: -130, y: -60 }, { x: 130, y: -60 }, { x: -100, y: 30 },
+                { x: 100, y: 30 }, { x: -50, y: 110 }, { x: 50, y: 110 }
+            ];
+
+            myFiles.forEach((fileName, i) => {
+                const img = document.createElement('img');
+                img.src = fileName;
+                img.className = 'photo';
+                img.style.width = "110px";
+                img.style.height = "110px";
+                img.style.top = "50%";
+                document.body.appendChild(img);
+                
+                const pos = heartCoords[i];
+                setTimeout(() => {
+                    img.style.opacity = "1";
+                    img.style.transform = `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) rotate(${(Math.random() - 0.5) * 20}deg) scale(1)`;
+                }, 200 * i);
+            });
+        }
+    </script>
+</body>
+</html>
