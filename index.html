@@ -15,6 +15,55 @@
 
         #canvas { display: block; position: absolute; top: 0; left: 0; }
 
+        /* --- CUPID LOADER --- */
+        #loader {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 200;
+        }
+
+        /* A CSS Heart Cupid */
+        .cupid {
+            position: relative;
+            width: 50px; height: 50px;
+            background: #ff3366;
+            transform: rotate(-45deg);
+            animation: float 2s infinite ease-in-out;
+        }
+        .cupid::before, .cupid::after {
+            content: '';
+            position: absolute;
+            width: 50px; height: 50px;
+            background: #ff3366;
+            border-radius: 50%;
+        }
+        .cupid::before { top: -25px; left: 0; }
+        .cupid::after { left: 25px; top: 0; }
+
+        /* Wings for the Cupid heart */
+        .wings {
+            position: absolute;
+            width: 120px; height: 40px;
+            border-top: 5px solid #fff;
+            border-radius: 50%;
+            top: 10px; left: -35px;
+            opacity: 0.6;
+            animation: flap 0.5s infinite alternate;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(-45deg) translateY(0); }
+            50% { transform: rotate(-45deg) translateY(-20px); }
+        }
+        @keyframes flap {
+            from { transform: scaleY(1); }
+            to { transform: scaleY(0.5); }
+        }
+
+        /* --- BUTTON & SHOW --- */
         #start-btn {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -23,15 +72,17 @@
             border: none; border-radius: 50px;
             cursor: pointer; z-index: 100;
             box-shadow: 0 0 25px #ff3366;
+            display: none; 
         }
 
-        /* Countdown Style */
+        /* Ultimate Hide Class */
+        .force-hide { display: none !important; opacity: 0 !important; pointer-events: none !important; }
+
         .overlay {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             text-align: center; color: #ff3366;
-            z-index: 50; width: 100%;
-            display: none;
+            z-index: 50; width: 100%; display: none;
         }
         #countdown { font-size: 6rem; font-weight: bold; text-shadow: 0 0 20px #ff3366; }
 
@@ -59,23 +110,21 @@
             width: 100%; text-align: center; color: white;
             z-index: 20; animation: fadeIn 2s ease-in;
         }
-
         h1 { margin: 0; color: #ff3366; font-size: 2.2rem; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">Mi Amore 💖</button>
-    <audio id="bg-music" src="music.flac" loop></audio>
-    <canvas id="canvas"></canvas>
-
-    <div class="overlay" id="overlay">
-        <div id="countdown">3</div>
+    <div id="loader">
+        <div class="cupid"><div class="wings"></div></div>
     </div>
 
-    <div id="poem-text"></div>
+    <button id="start-btn">For Darling💖</button>
+    <audio id="bg-music" src="music.flac" preload="auto" loop></audio>
+    <canvas id="canvas"></canvas>
 
+    <div class="overlay" id="overlay"><div id="countdown">3</div></div>
+    <div id="poem-text"></div>
     <div id="final-text">
         <h1>Happy Birthday, Gia! 💖</h1>
         <p>You're the best part of my world. ❤️</p>
@@ -84,6 +133,7 @@
     <script>
         const startBtn = document.getElementById('start-btn');
         const music = document.getElementById('bg-music');
+        const loader = document.getElementById('loader');
         const overlay = document.getElementById('overlay');
         const countEl = document.getElementById('countdown');
         const poemEl = document.getElementById('poem-text');
@@ -91,7 +141,6 @@
         const ctx = canvas.getContext('2d');
 
         const myFiles = ['g1.jpeg', 'g2.png', 'g3.png', 'g4.png', 'g5.jpeg', 'g6.jpeg', 'g7.jpeg', 'g8.jpeg', 'g9.jpeg'];
-        
         const poemLines = [
             "A world of color, bright and new,",
             "Every moment better because of you.",
@@ -104,15 +153,38 @@
             "Happy Birthday, my beautiful Gia."
         ];
 
-        startBtn.addEventListener('click', () => {
-            startBtn.style.display = 'none';
+        let loadedCount = 0;
+        const totalToLoad = myFiles.length + 1;
+
+        function itemLoaded() {
+            loadedCount++;
+            if (loadedCount >= totalToLoad) {
+                loader.classList.add('force-hide'); // Hide Cupid
+                startBtn.style.display = 'block';   // Show Button
+            }
+        }
+
+        myFiles.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = itemLoaded;
+            img.onerror = itemLoaded;
+        });
+
+        music.oncanplaythrough = itemLoaded;
+        setTimeout(() => { if(loadedCount < totalToLoad) itemLoaded(); }, 8000);
+
+        startBtn.addEventListener('click', function() {
+            // THE ULTIMATE HIDE
+            this.classList.add('force-hide');
+            
             music.play();
-            overlay.style.display = 'block'; // Show countdown
+            overlay.style.display = 'block';
             startCountdown();
             setInterval(drawMatrix, 35);
         });
 
-        // Matrix Background
+        // Matrix
         canvas.height = window.innerHeight;
         canvas.width = window.innerWidth;
         const chars = 'GIA❤️LOVE✨01';
@@ -133,7 +205,6 @@
             });
         }
 
-        // --- FIXED COUNTDOWN LOGIC ---
         function startCountdown() {
             let count = 3;
             const timer = setInterval(() => {
@@ -142,8 +213,8 @@
                     countEl.textContent = count;
                 } else {
                     clearInterval(timer);
-                    overlay.style.display = 'none'; // Hide countdown
-                    startSlideshow(); // Start the story
+                    overlay.style.display = 'none';
+                    startSlideshow();
                 }
             }, 1000);
         }
@@ -154,23 +225,20 @@
                 if (index < myFiles.length) {
                     poemEl.textContent = poemLines[index];
                     poemEl.style.opacity = "1";
-
                     const img = document.createElement('img');
                     img.src = myFiles[index];
                     img.className = 'photo';
                     document.body.appendChild(img);
-
                     setTimeout(() => {
                         img.style.opacity = "1";
                         img.style.transform = "translate(-50%, -50%) scale(1)";
                     }, 100);
-
                     setTimeout(() => {
                         img.style.opacity = "0";
                         poemEl.style.opacity = "0";
                         img.style.transform = "translate(-50%, -50%) scale(0.8)";
                         setTimeout(() => { 
-                            img.remove(); 
+                            if(img.parentNode) img.remove(); 
                             index++;
                             showNext(); 
                         }, 1000);
@@ -189,7 +257,6 @@
                 { x: -130, y: -60 }, { x: 130, y: -60 }, { x: -100, y: 30 },
                 { x: 100, y: 30 }, { x: -50, y: 110 }, { x: 50, y: 110 }
             ];
-
             myFiles.forEach((fileName, i) => {
                 const img = document.createElement('img');
                 img.src = fileName;
@@ -198,7 +265,6 @@
                 img.style.height = "110px";
                 img.style.top = "50%";
                 document.body.appendChild(img);
-                
                 const pos = heartCoords[i];
                 setTimeout(() => {
                     img.style.opacity = "1";
